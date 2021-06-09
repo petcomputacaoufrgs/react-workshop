@@ -52,11 +52,11 @@ const Board: React.FC = () => {
     }
 
     const handleSwipeUp = () => {
-        console.log('cima')
+        console.log('para cima lala')
     }
     
     const handleSwipeDown = () => {
-        console.log('baixo')
+        console.log('para baixo')
     }
 
     const handleSwipeLeft = () => {
