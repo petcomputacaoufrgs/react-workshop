@@ -66,7 +66,7 @@ const Board: React.FC = () => {
             let piece_index_1 = i * 4
             let piece_index_2 = piece_index_1 + 1
 
-            while ( piece_index_1 < (i + 1) * 4) {
+            while (piece_index_1 < (i + 1) * 4) {
                 if(piece_index_2 === (i + 1) * 4) {
                     piece_index_2 = piece_index_1 + 1
                     piece_index_1++
@@ -74,7 +74,7 @@ const Board: React.FC = () => {
                 }
 
                 if(newArray[piece_index_2] === 0) {
-                    piece_index_2 ++
+                    piece_index_2++
                 } else if(newArray[piece_index_1] === 0) {
                     newArray[piece_index_1] = newArray[piece_index_2]
                     newArray[piece_index_2] = 0
@@ -95,7 +95,38 @@ const Board: React.FC = () => {
     }
 
     const handleSwipeRight = () => {
-        console.log('direita')
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++) {
+            let piece_index_1 = (i * 4) + 3
+            let piece_index_2 = piece_index_1 - 1
+
+            while (piece_index_1 > (i * 4) - 1) {
+                if(piece_index_2 === (i * 4) - 1) {
+                    piece_index_2 = piece_index_1 - 1
+                    piece_index_1--
+                    continue
+                }
+
+                if(newArray[piece_index_2] === 0) {
+                    piece_index_2--
+                } else if(newArray[piece_index_1] === 0) {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                } else {
+                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
+                        newArray[piece_index_1] *= 2
+                        newArray[piece_index_2] = 0
+                    } else {
+                        piece_index_1--
+                        piece_index_2 = piece_index_1 - 1
+                    }
+                }
+            }
+        }
+
+        setGameState(newArray)
+        addNumber(newArray)
     }
     
 
