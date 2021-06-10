@@ -59,9 +59,6 @@ const Board: React.FC = () => {
             let piece_index_2 = i + 4
 
             while(piece_index_1 !== i + 1){
-                console.log(piece_index_1)
-                console.log(piece_index_2)
-                
                 if(piece_index_2 === i + 1) {
                     piece_index_2 = piece_index_1 + 4
                     piece_index_1 = i + 1
@@ -78,7 +75,7 @@ const Board: React.FC = () => {
                         newArray[piece_index_1] *= 2
                         newArray[piece_index_2] = 0
                     } else {
-                        piece_index_1 = piece_index_1 + 4 < 16 ? piece_index_1 + 4 : piece_index_1++
+                        piece_index_1 = piece_index_1 + 4 < 16 ? piece_index_1 + 4 : i + 1
                         piece_index_2 = piece_index_1 + 4 < 16 ? piece_index_1 + 4 : i + 1
                     }
                 }
@@ -90,7 +87,38 @@ const Board: React.FC = () => {
     }
     
     const handleSwipeDown = () => {
-        console.log("para baixo")
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++) {
+            let piece_index_1 = i + 12
+            let piece_index_2 = piece_index_1 - 4
+
+            while(piece_index_1 !== i + 13){
+                if(piece_index_2 === i + 13) {
+                    piece_index_2 = piece_index_1 - 4
+                    piece_index_1 = i + 13
+                    continue
+                }
+
+                if(newArray[piece_index_2] === 0) {
+                    piece_index_2 = piece_index_2 - 4 > -1 ? piece_index_2 - 4 : i + 13 
+                } else if(newArray[piece_index_1] === 0) {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                } else {
+                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
+                        newArray[piece_index_1] *= 2
+                        newArray[piece_index_2] = 0
+                    } else {
+                        piece_index_1 = piece_index_1 - 4 > -1 ? piece_index_1 - 4 : i + 13
+                        piece_index_2 = piece_index_1 - 4 > -1 ? piece_index_1 - 4 : i + 13
+                    }
+                }
+            }
+        }
+
+        addNumber(newArray)
+        setGameState(newArray)
     }
 
     const handleSwipeLeft = () => {
