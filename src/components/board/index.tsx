@@ -3,14 +3,14 @@ import Piece from '../piece'
 import { useEvent } from '../../utils'
 import './styles.css'
 
-const Board: React.FC = () => {
+const Board: React.FC = () =>{
     const UP_ARROW = 38
     const DOWN_ARROW = 40
     const LEFT_ARROW = 37
     const RIGHT_ARROW = 39
-
-    const [gameState, setGameState] = useState(new Array(16).fill(0))
     
+    const [gameState, setGameState] = useState(new Array(16).fill(0))
+
     const initialize = () => {
         let newGrid = [...gameState]
 
@@ -22,18 +22,18 @@ const Board: React.FC = () => {
     const addNumber = (newGrid: number[]) => {
         let added = false
 
-        while(!added) {
+        while(!added){
             let position = Math.floor(Math.random() * 16)
-
-            if(newGrid[position] === 0) {
-                newGrid[position] = Math.random() > 0.5 ? 2 : 4
+        
+            if(newGrid[position] === 0){
+                newGrid[position] = Math.random() < 0.8 ? 2 : 4
                 added = true
             }
         }
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-        switch (event.keyCode) {
+        switch(event.keyCode){
             case UP_ARROW:
                 handleSwipeUp()
                 break;
@@ -52,52 +52,185 @@ const Board: React.FC = () => {
     }
 
     const handleSwipeUp = () => {
-        console.log('cima')
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++)
+        {
+            let piece_index_1 = i
+            let piece_index_2 = piece_index_1 + 4
+
+            while(piece_index_1 < (i + 12))
+            {
+                if(piece_index_2 > (i + 12))
+                {
+                    piece_index_1 += 4
+                    piece_index_2 = piece_index_1 + 4
+                }
+                else if(newArray[piece_index_2] === 0)
+                {
+                    piece_index_2 += 4
+                }
+                else if(newArray[piece_index_1] === 0)
+                {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                    piece_index_1 += 4
+                    piece_index_2 = piece_index_1 + 4
+                }
+                else if(newArray[piece_index_1] === newArray[piece_index_2])
+                {
+                    newArray[piece_index_1] *= 2
+                    newArray[piece_index_2] = 0
+                    piece_index_1 += 4
+                    piece_index_2 = piece_index_1 + 4
+                }
+                else
+                {
+                    piece_index_1 += 4
+                    piece_index_2 = piece_index_1 + 4
+                }
+            }
+        }
+        
+        addNumber(newArray)
+        setGameState(newArray)
+
     }
-    
+
     const handleSwipeDown = () => {
-        console.log('baixo')
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++)
+        {
+            let piece_index_1 = i + 12
+            let piece_index_2 = piece_index_1 - 4
+
+            while(piece_index_1 > i)
+            {
+                if(piece_index_2 < i)
+                {
+                    piece_index_1 -= 4
+                    piece_index_2 = piece_index_1 - 4
+                }
+                else if(newArray[piece_index_2] === 0)
+                {
+                    piece_index_2 -= 4
+                }
+                else if(newArray[piece_index_1] === 0)
+                {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                    piece_index_1 -= 4
+                    piece_index_2 = piece_index_1 - 4
+                }
+                else if(newArray[piece_index_1] === newArray[piece_index_2])
+                {
+                    newArray[piece_index_1] *= 2
+                    newArray[piece_index_2] = 0
+                    piece_index_1 -= 4
+                    piece_index_2 = piece_index_1 - 4
+                }
+                else
+                {
+                    piece_index_1 -= 4
+                    piece_index_2 = piece_index_1 - 4
+                }
+            }
+        }
+        
+        addNumber(newArray)
+        setGameState(newArray)
     }
 
     const handleSwipeLeft = () => {
         let newArray = [...gameState]
 
-        for(let i = 0; i < 4; i++) {
+        for(let i = 0; i < 4; i++)
+        {
             let piece_index_1 = i * 4
             let piece_index_2 = piece_index_1 + 1
 
-            while ( piece_index_1 < (i + 1) * 4) {
-                if(piece_index_2 === (i + 1) * 4) {
-                    piece_index_2 = piece_index_1 + 1
+            while(piece_index_1 < ((i * 4) + 3))
+            {
+                if(piece_index_2 > ((i * 4) + 3))
+                {
                     piece_index_1++
-                    continue
+                    piece_index_2 = piece_index_1 + 1
                 }
-
-                if(newArray[piece_index_2] === 0) {
+                else if(newArray[piece_index_2] === 0)
+                {
                     piece_index_2 ++
-                } else if(newArray[piece_index_1] === 0) {
+                }
+                else if(newArray[piece_index_1] === 0)
+                {
                     newArray[piece_index_1] = newArray[piece_index_2]
                     newArray[piece_index_2] = 0
-                } else {
-                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
-                        newArray[piece_index_1] *= 2
-                        newArray[piece_index_2] = 0
-                    } else {
-                        piece_index_1++
-                        piece_index_2 = piece_index_1 + 1
-                    }
+                    piece_index_1++
+                    piece_index_2 = piece_index_1 + 1
+                }
+                else if(newArray[piece_index_1] === newArray[piece_index_2])
+                {
+                    newArray[piece_index_1] *= 2
+                    newArray[piece_index_2] = 0
+                    piece_index_1++
+                    piece_index_2 = piece_index_1 + 1
+                }
+                else
+                {
+                    piece_index_1++
+                    piece_index_2 = piece_index_1 + 1
                 }
             }
         }
-
-        setGameState(newArray)
+        
         addNumber(newArray)
+        setGameState(newArray)        
     }
 
     const handleSwipeRight = () => {
-        console.log('direita')
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++)
+        {
+            let piece_index_1 = (i * 4) + 3
+            let piece_index_2 = piece_index_1 - 1
+
+            while(piece_index_1 > (i * 4))
+            {
+                if(piece_index_2 < (i * 4))
+                {
+                    piece_index_1--
+                    piece_index_2 = piece_index_1 - 1
+                }
+                else if(newArray[piece_index_2] === 0)
+                {
+                    piece_index_2 --
+                }
+                else if(newArray[piece_index_1] === 0)
+                {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                    piece_index_1--
+                    piece_index_2 = piece_index_1 - 1
+                }
+                else if(newArray[piece_index_1] === newArray[piece_index_2])
+                {
+                    newArray[piece_index_1] *= 2
+                    newArray[piece_index_2] = 0
+                    piece_index_1--
+                    piece_index_2 = piece_index_1 - 1
+                }
+                else
+                {
+                    piece_index_1--
+                    piece_index_2 = piece_index_1 - 1
+                }
+            }
+        }
+        
+        addNumber(newArray)
+        setGameState(newArray) 
     }
-    
 
     useEffect(() => {
         initialize()
@@ -105,7 +238,7 @@ const Board: React.FC = () => {
 
     useEvent("keydown", handleKeyDown)
 
-    return (
+    return(
         <div className="board">
             {gameState.map(
                 (number, index) => <Piece num={number} key={index}/>
