@@ -19,15 +19,32 @@ const Board: React.FC = () =>{
         setGameState(newGrid)
     }
 
+    const emptySpace = (newGrid: number[]) => {
+        let i = 0
+
+        while(i < 16)
+        {
+            if(newGrid[i] === 0)
+            {
+                return 1  //se algum espaço é 0, então há espaço vazio no tabuleiro
+            }
+            i++
+        }
+        return 0  //se percorreu todo o tabuleiro sem retornar, então não há espaço vazio
+    }
+
     const addNumber = (newGrid: number[]) => {
         let added = false
 
-        while(!added){
-            let position = Math.floor(Math.random() * 16)
-        
-            if(newGrid[position] === 0){
-                newGrid[position] = Math.random() < 0.8 ? 2 : 4
-                added = true
+        if(emptySpace(newGrid))  // só adiciona número se existe espaço vazio
+        {            
+            while(!added){
+                let position = Math.floor(Math.random() * 16)
+            
+                if(newGrid[position] === 0){
+                    newGrid[position] = Math.random() < 0.8 ? 2 : 4
+                    added = true
+                }
             }
         }
     }
@@ -74,8 +91,6 @@ const Board: React.FC = () =>{
                 {
                     newArray[piece_index_1] = newArray[piece_index_2]
                     newArray[piece_index_2] = 0
-                    piece_index_1 += 4
-                    piece_index_2 = piece_index_1 + 4
                 }
                 else if(newArray[piece_index_1] === newArray[piece_index_2])
                 {
@@ -120,8 +135,6 @@ const Board: React.FC = () =>{
                 {
                     newArray[piece_index_1] = newArray[piece_index_2]
                     newArray[piece_index_2] = 0
-                    piece_index_1 -= 4
-                    piece_index_2 = piece_index_1 - 4
                 }
                 else if(newArray[piece_index_1] === newArray[piece_index_2])
                 {
@@ -165,8 +178,6 @@ const Board: React.FC = () =>{
                 {
                     newArray[piece_index_1] = newArray[piece_index_2]
                     newArray[piece_index_2] = 0
-                    piece_index_1++
-                    piece_index_2 = piece_index_1 + 1
                 }
                 else if(newArray[piece_index_1] === newArray[piece_index_2])
                 {
@@ -210,8 +221,6 @@ const Board: React.FC = () =>{
                 {
                     newArray[piece_index_1] = newArray[piece_index_2]
                     newArray[piece_index_2] = 0
-                    piece_index_1--
-                    piece_index_2 = piece_index_1 - 1
                 }
                 else if(newArray[piece_index_1] === newArray[piece_index_2])
                 {

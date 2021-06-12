@@ -47,24 +47,29 @@
 .piece_128{
     background-color: #E7C65E;
     color: rgb(88, 83, 69);
+    font-size: 40px;
 }
 
 .piece_256{
     background-color: #E8C350;
     color: rgb(88, 83, 69);
+    font-size: 40px;
 }
 
 .piece_512{
     background-color: #E8BE40;
     color: rgb(88, 83, 69);
+    font-size: 40px;
 }
 
 .piece_1024{
     background-color: #E8BB31;
-    columns: whitesmoke;
+    columns: rgb(59, 54, 47);
+    font-size: 30px;
 }
 
 .piece_2048{
     background-color: #E7B723;
-    columns: whitesmoke;
+    columns: rgb(61, 47, 47);
+    font-size: 30px;
 }
