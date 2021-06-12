@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Piece from '../piece'
 import { useEvent } from '../../utils'
 import './styles.css'
 
 const Board: React.FC = () => {
+
+	const LINES = 4 
+	const TO = 0
+	const FROM = 1
 
 	const initialize = () => {
 		let newGrid = new Array(16).fill(0)
@@ -27,8 +31,6 @@ const Board: React.FC = () => {
 
 	const [gameState, setGameState] = useState(initialize())
 
-	const LINES = 4
-
 	const handleKeyDown = (event: KeyboardEvent) => {
 
 			const move = {
@@ -43,129 +45,99 @@ const Board: React.FC = () => {
 			if(moveFunction) moveFunction(event.key)
 	}
 
-	const handleSwipeUp = () => {
-			console.log('cima')
+	const handleSwipe = (
+		isLastPieceOfLine: (piece: number, iterator: number) => boolean,
+		selectLinePieces: (pieces: number[], iterator?: number) => void,
+		nextPieceFrom: (pieces: number[]) => void
+	) => {
+
+		const transfer = (array: number[], pieceTo: number, pieceFrom: number) => {
+			array[pieceTo] += array[pieceFrom]
+			array[pieceFrom] = 0
+		}
+
+		let newArray = [...gameState]
+
+		let pieces = [0,1]
+		
+		for(let i = 0; i < LINES; i++) {
+			selectLinePieces(pieces, i)
+			while (!isLastPieceOfLine(pieces[TO], i)) {
+				if(isLastPieceOfLine(pieces[FROM], i)) {
+					selectLinePieces(pieces)
+				}
+				else if(newArray[pieces[FROM]] === 0) {
+					nextPieceFrom(pieces)
+				} 
+				else if(newArray[pieces[TO]] === 0 || newArray[pieces[TO]] === newArray[pieces[FROM]]) {
+					transfer(newArray, pieces[TO], pieces[FROM])
+					nextPieceFrom(pieces)
+				} 
+				else selectLinePieces(pieces)
+			}
+		}
+
+		addNumber(newArray)
+		setGameState(newArray)
 	}
+
+	const handleSwipeUp = () => {
+
+		const isLastPieceOfLine = (piece: number, iterator: number) => piece > iterator + (LINES * (LINES - 1)) 
+
+		const selectLinePieces = (pieces: number[], iterator?: number) => {
+			pieces[TO] = iterator ? iterator : (pieces[TO] + LINES)
+			pieces[FROM] = pieces[TO] + LINES
+		}
+
+		const nextFromPiece = (pieces: number[]) => pieces[FROM] += LINES
+		
+		handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)	
+	}
+
+		const handleSwipeDown = () => {
+
+			const isLastPieceOfLine = (piece: number, iterator: number) => piece < iterator 
+
+			const selectLinePieces = (pieces: number[], iterator?: number) => {
+				pieces[TO] = iterator ? (iterator + LINES * (LINES - 1)) : (pieces[TO] - LINES)
+				pieces[FROM] = pieces[TO] - LINES
+			}
 	
-	const handleSwipeDown = () => {
-			console.log('baixo')
+			const nextFromPiece = (pieces: number[]) => pieces[FROM] -= LINES
+			
+			handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)	
 	}
 
 	const handleSwipeLeft = () => {
 
 			const isLastPieceOfLine = (piece: number, iterator: number) => piece > (iterator * LINES) + LINES - 1
 
-			const nextPiecesOfLine = (pieceTo: number, pieceFrom: number) => {
-				pieceTo++
-				pieceFrom = pieceTo + 1
-				return [pieceTo, pieceFrom]
+			const selectLinePieces = (pieces: number[], iterator?: number) => {
+				pieces[TO] = iterator ? (iterator * LINES) : (pieces[TO] + 1)
+				pieces[FROM] = pieces[TO] + 1
 			}
 
-			const selectLinePieces = (pieceTo: number, pieceFrom: number, iterator: number) => {
-				pieceTo = iterator * LINES
-				pieceFrom = pieceTo + 1
-				return [pieceTo, pieceFrom]
-			}
+			const nextFromPiece = (pieces: number[]) => pieces[FROM]++
 
-			const nextFromPiece = (pieceFrom: number) => pieceFrom++
-
-			console.log('esquerda')
-
-			handleSwipe(
-				isLastPieceOfLine,
-				nextPiecesOfLine,
-				selectLinePieces,
-				nextFromPiece
-			)
-	}
-
-	const handleSwipe = (
-		isLastPieceOfLine: (piece: number, iterator: number) => boolean,
-		nextPiecesOfLine: (pieceTo: number, pieceFrom: number) => number[],
-		selectLinePieces: (pieceTo: number, pieceFrom: number, iterator: number) => number[],
-		nextPieceFrom: (pieceFrom: number) => number
-	) => {
-
-		let newArray = [...gameState]
-
-		let pieceTo = 0
-		let pieceFrom = 1
-		
-		for(let i = 0; i < LINES; i++) {
-			selectLinePieces(pieceTo, pieceFrom, i)
-			while (!isLastPieceOfLine(pieceTo, i)) {
-				if(isLastPieceOfLine(pieceFrom, i)) {
-					nextPiecesOfLine(pieceTo, pieceFrom)
-				}
-				else if(newArray[pieceFrom] === 0) {
-					pieceFrom = nextPieceFrom(pieceFrom)
-				} 
-				else if(newArray[pieceTo] === 0 || newArray[pieceTo] === newArray[pieceFrom]) {
-					transfer(newArray, pieceTo, pieceFrom)
-					pieceFrom = nextPieceFrom(pieceFrom)
-				} 
-				else {
-					nextPiecesOfLine(pieceTo, pieceFrom)
-				}
-			}
-		}
-
-		addNumber(newArray)
-		setGameState(newArray)
+			handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)
 	}
 
 	const handleSwipeRight = () => {
 
 		const isLastPieceOfLine = (piece: number, iterator: number) => piece < (iterator * LINES) 
 
-		let newArray = [...gameState]
-			
-		let pieceTo = LINES - 1
-		let pieceFrom = pieceTo - 1
-
-		const nextPiecesOfLine = () => {
-			pieceTo--
-			pieceFrom = pieceTo - 1
+		const selectLinePieces = (pieces: number[], iterator?: number) => {
+			pieces[TO] = iterator ? (iterator * LINES + (LINES - 1)) : (pieces[TO] - 1)
+			pieces[FROM] = pieces[TO] - 1
 		}
 
-		const selectLinePieces = (iterator: number) => {
-			pieceTo = iterator * LINES + (LINES - 1)
-			pieceFrom = pieceTo - 1
-		}
-
-		const nextFromPiece = () => {
-			pieceFrom--
-		} 
-
-		for(let i = 0; i < LINES; i++) {
-			selectLinePieces(i)
-			while (!isLastPieceOfLine(pieceTo, i)) {
-					if(isLastPieceOfLine(pieceFrom, i)) {
-						nextPiecesOfLine()
-					}
-					else if(newArray[pieceFrom] === 0) {
-						nextFromPiece()
-					} 
-					else if(newArray[pieceTo] === 0 || newArray[pieceTo] === newArray[pieceFrom]) {
-						transfer(newArray, pieceTo, pieceFrom)
-						nextFromPiece()
-					} 
-					else nextPiecesOfLine()
-			}
-	}
-
-		addNumber(newArray)
-		setGameState(newArray)
+		const nextFromPiece = (pieces: number[]) => pieces[FROM]--
 		
-		console.log('direita')
+		handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)
 	}
 
-	const transfer = (array: number[], pieceTo: number, pieceFrom: number) => {
-		array[pieceTo] += array[pieceFrom]
-		array[pieceFrom] = 0
-	}
 	
-
 	useEvent("keydown", handleKeyDown)
 
 	return (
