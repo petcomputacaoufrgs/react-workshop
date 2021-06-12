@@ -1,116 +1,179 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Piece from '../piece'
 import { useEvent } from '../../utils'
 import './styles.css'
 
 const Board: React.FC = () => {
-    const UP_ARROW = 38
-    const DOWN_ARROW = 40
-    const LEFT_ARROW = 37
-    const RIGHT_ARROW = 39
 
-    const [gameState, setGameState] = useState(new Array(16).fill(0))
-    
-    const initialize = () => {
-        let newGrid = [...gameState]
+	const initialize = () => {
+		let newGrid = new Array(16).fill(0)
+		addNumber(newGrid)
+		addNumber(newGrid)
+		return newGrid
+	}
 
-        addNumber(newGrid)
-        addNumber(newGrid)
-        setGameState(newGrid)
-    }
+	const addNumber = (newGrid: number[]) => {
+			let added = false
 
-    const addNumber = (newGrid: number[]) => {
-        let added = false
+			while(!added) {
+					let position = Math.floor(Math.random() * 16)
 
-        while(!added) {
-            let position = Math.floor(Math.random() * 16)
+					if(newGrid[position] === 0) {
+							newGrid[position] = Math.random() > 0.5 ? 2 : 4
+							added = true
+					}
+			}
+	}
 
-            if(newGrid[position] === 0) {
-                newGrid[position] = Math.random() > 0.5 ? 2 : 4
-                added = true
-            }
-        }
-    }
+	const [gameState, setGameState] = useState(initialize())
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-        switch (event.keyCode) {
-            case UP_ARROW:
-                handleSwipeUp()
-                break;
-            case DOWN_ARROW:
-                handleSwipeDown()
-                break;
-            case LEFT_ARROW:
-                handleSwipeLeft()
-                break;
-            case RIGHT_ARROW:
-                handleSwipeRight()
-                break;
-            default:
-                break;
-        }
-    }
+	const LINES = 4
 
-    const handleSwipeUp = () => {
-        console.log('cima')
-    }
-    
-    const handleSwipeDown = () => {
-        console.log('baixo')
-    }
+	const handleKeyDown = (event: KeyboardEvent) => {
 
-    const handleSwipeLeft = () => {
-        let newArray = [...gameState]
+			const move = {
+					ArrowUp: handleSwipeUp,
+					ArrowDown: handleSwipeDown,
+					ArrowLeft: handleSwipeLeft,
+					ArrowRight: handleSwipeRight,
+			}
 
-        for(let i = 0; i < 4; i++) {
-            let piece_index_1 = i * 4
-            let piece_index_2 = piece_index_1 + 1
+			const moveFunction: (command: string) => void | undefined = move[event.key]
 
-            while ( piece_index_1 < (i + 1) * 4) {
-                if(piece_index_2 === (i + 1) * 4) {
-                    piece_index_2 = piece_index_1 + 1
-                    piece_index_1++
-                    continue
-                }
+			if(moveFunction) moveFunction(event.key)
+	}
 
-                if(newArray[piece_index_2] === 0) {
-                    piece_index_2 ++
-                } else if(newArray[piece_index_1] === 0) {
-                    newArray[piece_index_1] = newArray[piece_index_2]
-                    newArray[piece_index_2] = 0
-                } else {
-                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
-                        newArray[piece_index_1] *= 2
-                        newArray[piece_index_2] = 0
-                    } else {
-                        piece_index_1++
-                        piece_index_2 = piece_index_1 + 1
-                    }
-                }
-            }
-        }
+	const handleSwipeUp = () => {
+			console.log('cima')
+	}
+	
+	const handleSwipeDown = () => {
+			console.log('baixo')
+	}
 
-        setGameState(newArray)
-        addNumber(newArray)
-    }
+	const handleSwipeLeft = () => {
 
-    const handleSwipeRight = () => {
-        console.log('direita')
-    }
-    
+			const isLastPieceOfLine = (piece: number, iterator: number) => piece > (iterator * LINES) + LINES - 1
 
-    useEffect(() => {
-        initialize()
-    }, [])
+			const nextPiecesOfLine = (pieceTo: number, pieceFrom: number) => {
+				pieceTo++
+				pieceFrom = pieceTo + 1
+				return [pieceTo, pieceFrom]
+			}
 
-    useEvent("keydown", handleKeyDown)
+			const selectLinePieces = (pieceTo: number, pieceFrom: number, iterator: number) => {
+				pieceTo = iterator * LINES
+				pieceFrom = pieceTo + 1
+				return [pieceTo, pieceFrom]
+			}
 
-    return (
-        <div className="board">
-            {gameState.map(
-                (number, index) => <Piece num={number} key={index}/>
-            )}
-        </div>
-    )
+			const nextFromPiece = (pieceFrom: number) => pieceFrom++
+
+			console.log('esquerda')
+
+			handleSwipe(
+				isLastPieceOfLine,
+				nextPiecesOfLine,
+				selectLinePieces,
+				nextFromPiece
+			)
+	}
+
+	const handleSwipe = (
+		isLastPieceOfLine: (piece: number, iterator: number) => boolean,
+		nextPiecesOfLine: (pieceTo: number, pieceFrom: number) => number[],
+		selectLinePieces: (pieceTo: number, pieceFrom: number, iterator: number) => number[],
+		nextPieceFrom: (pieceFrom: number) => number
+	) => {
+
+		let newArray = [...gameState]
+
+		let pieceTo = 0
+		let pieceFrom = 1
+		
+		for(let i = 0; i < LINES; i++) {
+			selectLinePieces(pieceTo, pieceFrom, i)
+			while (!isLastPieceOfLine(pieceTo, i)) {
+				if(isLastPieceOfLine(pieceFrom, i)) {
+					nextPiecesOfLine(pieceTo, pieceFrom)
+				}
+				else if(newArray[pieceFrom] === 0) {
+					pieceFrom = nextPieceFrom(pieceFrom)
+				} 
+				else if(newArray[pieceTo] === 0 || newArray[pieceTo] === newArray[pieceFrom]) {
+					transfer(newArray, pieceTo, pieceFrom)
+					pieceFrom = nextPieceFrom(pieceFrom)
+				} 
+				else {
+					nextPiecesOfLine(pieceTo, pieceFrom)
+				}
+			}
+		}
+
+		addNumber(newArray)
+		setGameState(newArray)
+	}
+
+	const handleSwipeRight = () => {
+
+		const isLastPieceOfLine = (piece: number, iterator: number) => piece < (iterator * LINES) 
+
+		let newArray = [...gameState]
+			
+		let pieceTo = LINES - 1
+		let pieceFrom = pieceTo - 1
+
+		const nextPiecesOfLine = () => {
+			pieceTo--
+			pieceFrom = pieceTo - 1
+		}
+
+		const selectLinePieces = (iterator: number) => {
+			pieceTo = iterator * LINES + (LINES - 1)
+			pieceFrom = pieceTo - 1
+		}
+
+		const nextFromPiece = () => {
+			pieceFrom--
+		} 
+
+		for(let i = 0; i < LINES; i++) {
+			selectLinePieces(i)
+			while (!isLastPieceOfLine(pieceTo, i)) {
+					if(isLastPieceOfLine(pieceFrom, i)) {
+						nextPiecesOfLine()
+					}
+					else if(newArray[pieceFrom] === 0) {
+						nextFromPiece()
+					} 
+					else if(newArray[pieceTo] === 0 || newArray[pieceTo] === newArray[pieceFrom]) {
+						transfer(newArray, pieceTo, pieceFrom)
+						nextFromPiece()
+					} 
+					else nextPiecesOfLine()
+			}
+	}
+
+		addNumber(newArray)
+		setGameState(newArray)
+		
+		console.log('direita')
+	}
+
+	const transfer = (array: number[], pieceTo: number, pieceFrom: number) => {
+		array[pieceTo] += array[pieceFrom]
+		array[pieceFrom] = 0
+	}
+	
+
+	useEvent("keydown", handleKeyDown)
+
+	return (
+			<div className="board">
+					{gameState.map(
+							(number, index) => <Piece num={number} key={index}/>
+					)}
+			</div>
+	)
 }
 export default Board
