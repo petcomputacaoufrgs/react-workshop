@@ -8,3 +8,9 @@ export const useEvent = (event: any, handler: {(this: Window, ev: any): any; (th
         }
     })
 }
+
+export const isNotEmpty = <T>(list?: T[]) => list !== undefined && list.length > 0
+
+export const randomItem = <T>(list: T[]): T => {
+    return list[Math.floor(Math.random() * list.length)]
+}

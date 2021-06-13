@@ -1,55 +1,60 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Piece from '../piece'
-import { useEvent } from '../../utils'
+import { isNotEmpty, randomItem, useEvent } from '../../utils'
 import './styles.css'
+
+interface handleSwipeProps {
+	isOffline: (piece: number, iterator: number) => boolean,
+	selectLinePieces: (pieces: number[], iterator?: number) => void,
+	nextPieceFrom: (pieces: number[]) => void
+}
 
 const Board: React.FC = () => {
 
-	const LINES = 4 
+	const SQUARES = 16
+	const LINES = SQUARES/4 
 	const TO = 0
 	const FROM = 1
 
+	const addNumber = (grid: number[]) => {
+		let freeIndexes = new Array<number>()
+
+		grid.forEach((p, index) => {
+			if(p === 0) freeIndexes.push(index)
+		})
+		
+		if(isNotEmpty(freeIndexes)) {
+			let randomIndex = randomItem(freeIndexes)
+			grid[randomIndex] = Math.random() >= 0.2 ? 2 : 4
+		}
+	}
+
 	const initialize = () => {
-		let newGrid = new Array(16).fill(0)
+		let newGrid = new Array(SQUARES).fill(0)
 		addNumber(newGrid)
 		addNumber(newGrid)
 		return newGrid
 	}
 
-	const addNumber = (newGrid: number[]) => {
-			let added = false
+	const [gameState, setGameState] = useState([] as number[])
 
-			while(!added) {
-					let position = Math.floor(Math.random() * 16)
-
-					if(newGrid[position] === 0) {
-							newGrid[position] = Math.random() > 0.5 ? 2 : 4
-							added = true
-					}
-			}
-	}
-
-	const [gameState, setGameState] = useState(initialize())
+	useEffect(() => setGameState(initialize()), [])
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 
-			const move = {
-					ArrowUp: handleSwipeUp,
-					ArrowDown: handleSwipeDown,
-					ArrowLeft: handleSwipeLeft,
-					ArrowRight: handleSwipeRight,
-			}
+		const move = {
+			ArrowUp: handleSwipeUp,
+			ArrowDown: handleSwipeDown,
+			ArrowLeft: handleSwipeLeft,
+			ArrowRight: handleSwipeRight,
+		}
 
-			const moveFunction: (command: string) => void | undefined = move[event.key]
+		const moveFunction: (command: string) => void | undefined = move[event.key]
 
-			if(moveFunction) moveFunction(event.key)
+		if(moveFunction) moveFunction(event.key)
 	}
 
-	const handleSwipe = (
-		isLastPieceOfLine: (piece: number, iterator: number) => boolean,
-		selectLinePieces: (pieces: number[], iterator?: number) => void,
-		nextPieceFrom: (pieces: number[]) => void
-	) => {
+	const handleSwipe = ({isOffline, selectLinePieces, nextPieceFrom}: handleSwipeProps) => {
 
 		const transfer = (array: number[], pieceTo: number, pieceFrom: number) => {
 			array[pieceTo] += array[pieceFrom]
@@ -57,13 +62,12 @@ const Board: React.FC = () => {
 		}
 
 		let newArray = [...gameState]
-
 		let pieces = [0,1]
 		
 		for(let i = 0; i < LINES; i++) {
 			selectLinePieces(pieces, i)
-			while (!isLastPieceOfLine(pieces[TO], i)) {
-				if(isLastPieceOfLine(pieces[FROM], i)) {
+			while (!isOffline(pieces[TO], i)) {
+				if(isOffline(pieces[FROM], i)) {
 					selectLinePieces(pieces)
 				}
 				else if(newArray[pieces[FROM]] === 0) {
@@ -78,65 +82,64 @@ const Board: React.FC = () => {
 		}
 
 		addNumber(newArray)
-		setGameState(newArray)
-	}
-
-	const handleSwipeUp = () => {
-
-		const isLastPieceOfLine = (piece: number, iterator: number) => piece > iterator + (LINES * (LINES - 1)) 
-
-		const selectLinePieces = (pieces: number[], iterator?: number) => {
-			pieces[TO] = iterator ? iterator : (pieces[TO] + LINES)
-			pieces[FROM] = pieces[TO] + LINES
-		}
-
-		const nextFromPiece = (pieces: number[]) => pieces[FROM] += LINES
-		
-		handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)	
-	}
-
-		const handleSwipeDown = () => {
-
-			const isLastPieceOfLine = (piece: number, iterator: number) => piece < iterator 
-
-			const selectLinePieces = (pieces: number[], iterator?: number) => {
-				pieces[TO] = iterator ? (iterator + LINES * (LINES - 1)) : (pieces[TO] - LINES)
-				pieces[FROM] = pieces[TO] - LINES
-			}
-	
-			const nextFromPiece = (pieces: number[]) => pieces[FROM] -= LINES
-			
-			handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)	
+		setGameState([...newArray])
 	}
 
 	const handleSwipeLeft = () => {
 
-			const isLastPieceOfLine = (piece: number, iterator: number) => piece > (iterator * LINES) + LINES - 1
+		const isOffline = (piece: number, iterator: number) => piece > (iterator * LINES) + LINES - 1
+		
+		const selectLinePieces = (pieces: number[], iterator?: number) => {
+			pieces[TO] = iterator !== undefined ? (iterator * LINES) : (pieces[TO] + 1)
+			pieces[FROM] = pieces[TO] + 1
+		}
+
+		const nextPieceFrom = (pieces: number[]) => pieces[FROM]++
+
+		handleSwipe({isOffline, selectLinePieces, nextPieceFrom})
+}
+
+	const handleSwipeUp = () => {
+
+		const isOffline = (piece: number, iterator: number) => piece > iterator + (LINES * (LINES - 1)) 
+
+		const selectLinePieces = (pieces: number[], iterator?: number) => {
+			pieces[TO] = iterator !== undefined ? iterator : (pieces[TO] + LINES)
+			pieces[FROM] = pieces[TO] + LINES
+		}
+
+		const nextPieceFrom = (pieces: number[]) => pieces[FROM] += LINES
+		
+		handleSwipe({isOffline, selectLinePieces, nextPieceFrom})	
+	}
+
+		const handleSwipeDown = () => {
+
+			const isOffline = (piece: number, iterator: number) => piece < iterator 
 
 			const selectLinePieces = (pieces: number[], iterator?: number) => {
-				pieces[TO] = iterator ? (iterator * LINES) : (pieces[TO] + 1)
-				pieces[FROM] = pieces[TO] + 1
+				pieces[TO] = iterator !== undefined ? (iterator + LINES * (LINES - 1)) : (pieces[TO] - LINES)
+				pieces[FROM] = pieces[TO] - LINES
 			}
-
-			const nextFromPiece = (pieces: number[]) => pieces[FROM]++
-
-			handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)
+	
+			const nextPieceFrom = (pieces: number[]) => pieces[FROM] -= LINES
+			
+			handleSwipe({isOffline, selectLinePieces, nextPieceFrom})	
 	}
 
 	const handleSwipeRight = () => {
 
-		const isLastPieceOfLine = (piece: number, iterator: number) => piece < (iterator * LINES) 
+		const isOffline = (piece: number, iterator: number) => piece < (iterator * LINES) 
 
 		const selectLinePieces = (pieces: number[], iterator?: number) => {
-			pieces[TO] = iterator ? (iterator * LINES + (LINES - 1)) : (pieces[TO] - 1)
+			pieces[TO] = iterator !== undefined ? (iterator * LINES + (LINES - 1)) : (pieces[TO] - 1)
 			pieces[FROM] = pieces[TO] - 1
 		}
 
-		const nextFromPiece = (pieces: number[]) => pieces[FROM]--
+		const nextPieceFrom = (pieces: number[]) => pieces[FROM]--
 		
-		handleSwipe(isLastPieceOfLine, selectLinePieces, nextFromPiece)
+		handleSwipe({isOffline, selectLinePieces, nextPieceFrom})
 	}
-
 	
 	useEvent("keydown", handleKeyDown)
 
