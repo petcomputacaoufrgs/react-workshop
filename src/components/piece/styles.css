@@ -47,9 +47,11 @@ background-color: #E8BE40;
 }
 
 .piece_1024 {
+font-size: 32px;
 background-color: #E8BB31;
 }
 
 .piece_2048 {
+font-size: 32px;
 background-color: #E7B723;
 }
