@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Piece from '../piece'
+import ButtonReset from '../button-reset'
 import { useEvent } from '../../utils'
 import './styles.css'
 
@@ -30,6 +31,15 @@ const Board: React.FC = () => {
                 added = true
             }
         }
+    }
+
+    const handleNewGame = (event: React.MouseEvent<HTMLButtonElement>) => {
+        let newGrid = [...gameState]
+        newGrid.fill(0)
+
+        addNumber(newGrid)
+        addNumber(newGrid)
+        setGameState(newGrid)
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -203,6 +213,8 @@ const Board: React.FC = () => {
             {gameState.map(
                 (number, index) => <Piece num={number} key={index}/>
             )}
+
+            <ButtonReset onNewGame={handleNewGame}/>
         </div>
     )
 }

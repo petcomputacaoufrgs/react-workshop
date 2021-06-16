@@ -1,10 +1,16 @@
-import React from 'react'
+import React, { EventHandler } from 'react'
 import './styles.css'
 
-const ButtonReset: React.FC = () => {
+interface ButtonResetProps {
+    onNewGame: (event: React.MouseEvent<HTMLButtonElement>) => void
+}
+
+const ButtonReset: React.FC<ButtonResetProps> = ({onNewGame}) => {
     return(
         <div className="buttonReset">
-            <button className="buttonReset__btn">NEW GAME</button>
+            <button onClick={onNewGame}>
+                NOVO JOGO
+            </button>
         </div>
     )
 }
