@@ -14,6 +14,7 @@ const Board: React.FC = () => {
     
     const initialize = () => {
         let newGrid = [...gameState]
+        newGrid.fill(0)
 
         addNumber(newGrid)
         addNumber(newGrid)
@@ -33,13 +34,8 @@ const Board: React.FC = () => {
         }
     }
 
-    const handleNewGame = (event: React.MouseEvent<HTMLButtonElement>) => {
-        let newGrid = [...gameState]
-        newGrid.fill(0)
-
-        addNumber(newGrid)
-        addNumber(newGrid)
-        setGameState(newGrid)
+    const handleNewGame = () => {
+        initialize()
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {

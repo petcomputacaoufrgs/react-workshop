@@ -1,4 +1,4 @@
-import React, { EventHandler } from 'react'
+import React from 'react'
 import './styles.css'
 
 interface ButtonResetProps {
