@@ -2,7 +2,7 @@ import React from 'react'
 import './styles.css'
 
 interface ButtonResetProps {
-    onNewGame: (event: React.MouseEvent<HTMLButtonElement>) => void
+    onNewGame: () => void
 }
 
 const ButtonReset: React.FC<ButtonResetProps> = ({onNewGame}) => {

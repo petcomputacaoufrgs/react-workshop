@@ -38,6 +38,12 @@ const Board: React.FC = () => {
         initialize()
     }
 
+    const handleGameOver = (gameGrid: number[]) => {
+        let isGameOver = gameGrid.includes(0)
+
+        return !isGameOver
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
         switch (event.keyCode) {
             case UP_ARROW:
@@ -88,8 +94,10 @@ const Board: React.FC = () => {
             }
         }
 
-        addNumber(newArray)
-        setGameState(newArray)
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray)
+        }
     }
     
     const handleSwipeDown = () => {
@@ -123,8 +131,10 @@ const Board: React.FC = () => {
             }
         }
 
-        addNumber(newArray)
-        setGameState(newArray)
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray)
+        }
     }
 
     const handleSwipeLeft = () => {
@@ -158,8 +168,10 @@ const Board: React.FC = () => {
             }
         }
 
-        addNumber(newArray)
-        setGameState(newArray)
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray)
+        }
     }
 
     const handleSwipeRight = () => {
@@ -193,8 +205,10 @@ const Board: React.FC = () => {
             }
         }
 
-        addNumber(newArray)
-        setGameState(newArray)
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray)        
+        }
     }
     
 
