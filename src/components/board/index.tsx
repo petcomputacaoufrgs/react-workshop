@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Piece from '../piece'
+import ButtonReset from '../button-reset'
 import { useEvent } from '../../utils'
 import './styles.css'
 
@@ -13,6 +14,7 @@ const Board: React.FC = () => {
     
     const initialize = () => {
         let newGrid = [...gameState]
+        newGrid.fill(0)
 
         addNumber(newGrid)
         addNumber(newGrid)
@@ -30,6 +32,22 @@ const Board: React.FC = () => {
                 added = true
             }
         }
+    }
+
+    const handleNewGame = () => {
+        initialize()
+    }
+
+    const handleGameOver = (gameGrid: number[]) => {
+        let isGameOver = gameGrid.includes(0)
+
+        return !isGameOver
+    }
+
+    const handleWinGame = (gameGrid: number[]) => {
+        let winGame = gameGrid.includes(2048)
+
+        return winGame
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -52,11 +70,87 @@ const Board: React.FC = () => {
     }
 
     const handleSwipeUp = () => {
-        console.log('cima')
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++) {
+            let piece_index_1 = i
+            let piece_index_2 = piece_index_1 + 4
+
+            while (piece_index_1 < 16) {
+                if(piece_index_2 >= 16) {
+                    piece_index_2 = i + 1
+                    piece_index_1 = 16
+                    continue
+                }
+
+                if(newArray[piece_index_2] === 0) {
+                    piece_index_2 += 4
+                } else if(newArray[piece_index_1] === 0) {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                } else {
+                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
+                        newArray[piece_index_1] *= 2
+                        newArray[piece_index_2] = 0
+                    } else {
+                        piece_index_1 += 4
+                        piece_index_2 = piece_index_1 + 4
+                    }
+                }
+            }
+        }
+
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray)
+
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()
+            }
+        }
     }
     
     const handleSwipeDown = () => {
-        console.log('baixo')
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++) {
+            let piece_index_1 = i + 12
+            let piece_index_2 = piece_index_1 - 4
+
+            while (piece_index_1 > 0) {
+                if(piece_index_2 < 0) {
+                    piece_index_2 = i + 13
+                    piece_index_1 = -1
+                    continue
+                }
+
+                if(newArray[piece_index_2] === 0) {
+                    piece_index_2 -= 4
+                } else if(newArray[piece_index_1] === 0) {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                } else {
+                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
+                        newArray[piece_index_1] *= 2
+                        newArray[piece_index_2] = 0
+                    } else {
+                        piece_index_1 -= 4
+                        piece_index_2 = piece_index_1 - 4
+                    }
+                }
+            }
+        }
+
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray)
+
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()
+            }
+        }
     }
 
     const handleSwipeLeft = () => {
@@ -66,7 +160,7 @@ const Board: React.FC = () => {
             let piece_index_1 = i * 4
             let piece_index_2 = piece_index_1 + 1
 
-            while ( piece_index_1 < (i + 1) * 4) {
+            while (piece_index_1 < (i + 1) * 4) {
                 if(piece_index_2 === (i + 1) * 4) {
                     piece_index_2 = piece_index_1 + 1
                     piece_index_1++
@@ -74,7 +168,7 @@ const Board: React.FC = () => {
                 }
 
                 if(newArray[piece_index_2] === 0) {
-                    piece_index_2 ++
+                    piece_index_2++
                 } else if(newArray[piece_index_1] === 0) {
                     newArray[piece_index_1] = newArray[piece_index_2]
                     newArray[piece_index_2] = 0
@@ -90,12 +184,57 @@ const Board: React.FC = () => {
             }
         }
 
-        setGameState(newArray)
-        addNumber(newArray)
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray)
+
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()            
+            }
+        }
     }
 
     const handleSwipeRight = () => {
-        console.log('direita')
+        let newArray = [...gameState]
+
+        for(let i = 0; i < 4; i++) {
+            let piece_index_1 = (i * 4) + 3
+            let piece_index_2 = piece_index_1 - 1
+
+            while (piece_index_1 > (i * 4) - 1) {
+                if(piece_index_2 === (i * 4) - 1) {
+                    piece_index_2 = piece_index_1 - 1
+                    piece_index_1--
+                    continue
+                }
+
+                if(newArray[piece_index_2] === 0) {
+                    piece_index_2--
+                } else if(newArray[piece_index_1] === 0) {
+                    newArray[piece_index_1] = newArray[piece_index_2]
+                    newArray[piece_index_2] = 0
+                } else {
+                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
+                        newArray[piece_index_1] *= 2
+                        newArray[piece_index_2] = 0
+                    } else {
+                        piece_index_1--
+                        piece_index_2 = piece_index_1 - 1
+                    }
+                }
+            }
+        }
+
+        if(!handleGameOver(newArray)) {
+            addNumber(newArray)
+            setGameState(newArray) 
+            
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()
+            }
+        }
     }
     
 
@@ -106,10 +245,15 @@ const Board: React.FC = () => {
     useEvent("keydown", handleKeyDown)
 
     return (
-        <div className="board">
-            {gameState.map(
-                (number, index) => <Piece num={number} key={index}/>
-            )}
+        <div>
+            <div className="board">
+                {gameState.map(
+                    (number, index) => <Piece num={number} key={index}/>
+                )}
+            </div>
+            <div>
+                <ButtonReset onNewGame={handleNewGame}/>
+            </div>
         </div>
     )
 }
