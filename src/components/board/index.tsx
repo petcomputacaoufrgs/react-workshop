@@ -245,12 +245,15 @@ const Board: React.FC = () => {
     useEvent("keydown", handleKeyDown)
 
     return (
-        <div className="board">
-            {gameState.map(
-                (number, index) => <Piece num={number} key={index}/>
-            )}
-
-            <ButtonReset onNewGame={handleNewGame}/>
+        <div>
+            <div className="board">
+                {gameState.map(
+                    (number, index) => <Piece num={number} key={index}/>
+                )}
+            </div>
+            <div>
+                <ButtonReset onNewGame={handleNewGame}/>
+            </div>
         </div>
     )
 }
