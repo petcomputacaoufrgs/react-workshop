@@ -44,6 +44,12 @@ const Board: React.FC = () => {
         return !isGameOver
     }
 
+    const handleWinGame = (gameGrid: number[]) => {
+        let winGame = gameGrid.includes(2048)
+
+        return winGame
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
         switch (event.keyCode) {
             case UP_ARROW:
@@ -97,6 +103,11 @@ const Board: React.FC = () => {
         if(!handleGameOver(newArray)) {
             addNumber(newArray)
             setGameState(newArray)
+
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()
+            }
         }
     }
     
@@ -134,6 +145,11 @@ const Board: React.FC = () => {
         if(!handleGameOver(newArray)) {
             addNumber(newArray)
             setGameState(newArray)
+
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()
+            }
         }
     }
 
@@ -171,6 +187,11 @@ const Board: React.FC = () => {
         if(!handleGameOver(newArray)) {
             addNumber(newArray)
             setGameState(newArray)
+
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()            
+            }
         }
     }
 
@@ -207,7 +228,12 @@ const Board: React.FC = () => {
 
         if(!handleGameOver(newArray)) {
             addNumber(newArray)
-            setGameState(newArray)        
+            setGameState(newArray) 
+            
+            if(handleWinGame(newArray)) {
+                alert('PARABÉNS!!! VOCÊ GANHOU')
+                handleNewGame()
+            }
         }
     }
     
