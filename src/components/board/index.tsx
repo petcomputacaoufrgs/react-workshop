@@ -1,116 +1,135 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import ArrayUtils from '../../utils/ArrayUtils'
 import Piece from '../piece'
-import { useEvent } from '../../utils'
+import { HandleSwipeProps } from './props'
 import './styles.css'
 
-const Board: React.FC = () => {
-    const UP_ARROW = 38
-    const DOWN_ARROW = 40
-    const LEFT_ARROW = 37
-    const RIGHT_ARROW = 39
-
-    const [gameState, setGameState] = useState(new Array(16).fill(0))
-    
-    const initialize = () => {
-        let newGrid = [...gameState]
-
-        addNumber(newGrid)
-        addNumber(newGrid)
-        setGameState(newGrid)
-    }
-
-    const addNumber = (newGrid: number[]) => {
-        let added = false
-
-        while(!added) {
-            let position = Math.floor(Math.random() * 16)
-
-            if(newGrid[position] === 0) {
-                newGrid[position] = Math.random() > 0.5 ? 2 : 4
-                added = true
-            }
-        }
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-        switch (event.keyCode) {
-            case UP_ARROW:
-                handleSwipeUp()
-                break;
-            case DOWN_ARROW:
-                handleSwipeDown()
-                break;
-            case LEFT_ARROW:
-                handleSwipeLeft()
-                break;
-            case RIGHT_ARROW:
-                handleSwipeRight()
-                break;
-            default:
-                break;
-        }
-    }
-
-    const handleSwipeUp = () => {
-        console.log('cima')
-    }
-    
-    const handleSwipeDown = () => {
-        console.log('baixo')
-    }
-
-    const handleSwipeLeft = () => {
-        let newArray = [...gameState]
-
-        for(let i = 0; i < 4; i++) {
-            let piece_index_1 = i * 4
-            let piece_index_2 = piece_index_1 + 1
-
-            while ( piece_index_1 < (i + 1) * 4) {
-                if(piece_index_2 === (i + 1) * 4) {
-                    piece_index_2 = piece_index_1 + 1
-                    piece_index_1++
-                    continue
-                }
-
-                if(newArray[piece_index_2] === 0) {
-                    piece_index_2 ++
-                } else if(newArray[piece_index_1] === 0) {
-                    newArray[piece_index_1] = newArray[piece_index_2]
-                    newArray[piece_index_2] = 0
-                } else {
-                    if(newArray[piece_index_1] === newArray[piece_index_2]) {
-                        newArray[piece_index_1] *= 2
-                        newArray[piece_index_2] = 0
-                    } else {
-                        piece_index_1++
-                        piece_index_2 = piece_index_1 + 1
-                    }
-                }
-            }
-        }
-
-        setGameState(newArray)
-        addNumber(newArray)
-    }
-
-    const handleSwipeRight = () => {
-        console.log('direita')
-    }
-    
-
+export const useEvent = (event: any, handler: {(this: Window, ev: any): any; (this: Window, ev: any): any;}, passive = false) => {
     useEffect(() => {
-        initialize()
-    }, [])
+        window.addEventListener(event, handler, passive)
+        return () => window.removeEventListener(event, handler)
+    })
+  } 
 
-    useEvent("keydown", handleKeyDown)
+const SliderBoard: React.FC = () => {
+    
+  const PIECES = 16
+  const LINES = PIECES / 4 
+  const TO = 0
+  const FROM = 1
 
-    return (
-        <div className="board">
-            {gameState.map(
-                (number, index) => <Piece num={number} key={index}/>
-            )}
-        </div>
-    )
+  const [gameState, setGameState] = useState<number[]>([])
+
+  const addNumber = (grid: number[]) => {
+    let freeIndexes = new Array<number>()
+
+    grid.forEach((p, index) => {
+      if(p === 0) freeIndexes.push(index) 
+    })
+    
+    if(ArrayUtils.isNotEmpty(freeIndexes)) {
+      let randomIndex = ArrayUtils.randomItem(freeIndexes)
+      grid[randomIndex] = Math.random() >= 0.4 ? 2 : 4
+    }
+  }
+
+  const handleKeyDown = (key: string) => {
+
+    const moveProps: HandleSwipeProps | undefined = moveFunctions[key]
+
+    if(moveProps) {
+		handleSwipe(moveProps)
+    }
+  }
+
+  const initialize = () => {
+    let newGrid = new Array<number>(PIECES).fill(0)
+    addNumber(newGrid)
+    addNumber(newGrid)
+    return newGrid
+  }
+
+  useEffect(() => {
+	  setGameState(initialize())
+  }, [])
+  
+  useEvent("keydown", (event: KeyboardEvent) => handleKeyDown(event.key))
+
+  const handleSwipe = ({isOffline, selectLinePieces, nextPieceFrom}: HandleSwipeProps) => {
+
+		const transfer = (array: number[], pieceTo: number, pieceFrom: number) => {
+			array[pieceTo] += array[pieceFrom]
+			array[pieceFrom] = 0
+		}
+
+		let newArray = [...gameState]
+		let pieces = [0,1]
+		
+		for(let i = 0; i < LINES; i++) {
+			selectLinePieces(pieces, i)
+			while (!isOffline(pieces[TO], i)) {
+				if(isOffline(pieces[FROM], i)) {
+					selectLinePieces(pieces)
+				}
+				else if(newArray[pieces[FROM]] === 0) {
+					nextPieceFrom(pieces)
+				} 
+				else if(newArray[pieces[TO]] === 0 || newArray[pieces[TO]] === newArray[pieces[FROM]]) {
+					transfer(newArray, pieces[TO], pieces[FROM])
+					nextPieceFrom(pieces)
+				} 
+				else selectLinePieces(pieces)
+			}
+		}
+
+	  addNumber(newArray)
+	  setGameState([...newArray])
+	}
+
+  const handleSwipeLeft: HandleSwipeProps = {
+		isOffline: (piece, iterator) => piece > (iterator * LINES) + LINES - 1,    
+		selectLinePieces: (pieces, iterator) => {
+			pieces[TO] = iterator !== undefined ? (iterator * LINES) : (pieces[TO] + 1)
+			pieces[FROM] = pieces[TO] + 1
+		},
+		nextPieceFrom: (pieces) => pieces[FROM]++
+	}
+
+ const handleSwipeUp: HandleSwipeProps = {
+	isOffline: (piece, iterator) => true,
+	selectLinePieces: (pieces, iterator) => {
+	},
+	nextPieceFrom: (pieces) => {}   
+ }
+
+ const handleSwipeDown: HandleSwipeProps = {
+	isOffline: (piece, iterator) => true,
+	selectLinePieces: (pieces, iterator) => {
+	},
+	nextPieceFrom: (pieces) => {}
+ }
+
+ const handleSwipeRight: HandleSwipeProps = {
+	isOffline: (piece, iterator) => true,
+	selectLinePieces: (pieces, iterator) => {
+	},
+	nextPieceFrom: (pieces) => {}
+ }
+
+  const moveFunctions = {
+    ArrowUp: handleSwipeUp,
+    ArrowDown: handleSwipeDown,
+    ArrowLeft: handleSwipeLeft,
+    ArrowRight: handleSwipeRight,
+  }
+
+  return (
+      <div className="board">
+          {gameState.map((number, index) => 
+            <Piece num={number} key={index}/>
+          )}
+      </div>
+  )
 }
-export default Board
+
+export default SliderBoard
